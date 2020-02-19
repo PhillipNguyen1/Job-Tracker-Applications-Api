@@ -1,0 +1,70 @@
+service: jobtracker-api
+
+custom:
+  settings:
+    APPLICATIONS_TABLE: applications
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  environment: ${self:custom.settings}
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.APPLICATIONS_TABLE}"
+
+functions:
+  createApplication:
+    handler: handler.createApplication
+    events:
+      - http:
+          path: /application
+          method: POST
+  getAllApplications:
+    handler: handler.getAllApplications
+    events:
+      - http:
+          path: /applications
+          method: GET
+  getApplication:
+    handler: handler.getApplication
+    events:
+      - http:
+          path: /application/{id}
+          method: GET
+  updateApplication:
+    handler: handler.updateApplication
+    events:
+      - http:
+          path: /application/{id}
+          method: PUT
+  deleteApplication:
+    handler: handler.deleteApplication
+    events:
+      - http:
+          path: /application/{id}
+          method: DELETE
+
+resources:
+  Resources:
+    ApplicationsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: "id"
+            AttributeType: "S"
+        KeySchema:
+          - AttributeName: "id"
+            KeyType: "HASH"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.settings.APPLICATIONS_TABLE}
