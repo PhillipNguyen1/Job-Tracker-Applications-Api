@@ -32,7 +32,7 @@ functions:
     handler: handler.getAllApplications
     events:
       - http:
-          path: /applications
+          path: /application
           method: GET
   getApplication:
     handler: handler.getApplication
